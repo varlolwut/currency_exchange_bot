@@ -1,10 +1,9 @@
 from bs4 import BeautifulSoup as bs
 import pandas as pd
-import sqlite3
 import requests
 from datetime import datetime
-
-DATABASE = './exchange_rate.sql'
+from selenium.webdriver import Chrome
+from selenium.webdriver.common.by import By
 
 
 def get_currency_rate_page(currency_rate_url):
@@ -32,10 +31,24 @@ def parse_eubank(html_page):
     return final_df
 
 
-tmp = parse_eubank(get_currency_rate_page("https://eubank.kz/exchange-rates/"))
+def parse_sber(sel_driver, url):
+    count = 0
+    driver = Chrome(executable_path=sel_driver)
+    driver.get(url)
+    news_element = driver.find_element(By.CLASS_NAME, "rates__table").text
+    words_to_list = news_element.split()
+
+    for _ in words_to_list:
+        count = count + 1
+    newstring = words_to_list[0:2] + words_to_list[count - 2: count]
+    tmp_list = [{'transaction_source': 'unspecified', 'transaction_type': newstring[0],
+                 'currency': 'RUB', 'rate': newstring[-2]},
+                {'transaction_source': 'unspecified', 'transaction_type': newstring[1],
+                 'currency': 'RUB', 'rate': newstring[-1]}]
+    final_df = pd.DataFrame(tmp_list)
+    final_df['ts'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    # print(final_df.head())
+    driver.close()
+    return final_df
 
 
-def sqlite_write(db_location):
-    conn = sqlite3.connect(db_location)
-    tmp.to_sql(name='eurasian_bank', con=conn)
-    conn.close()
