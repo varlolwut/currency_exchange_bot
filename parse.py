@@ -6,6 +6,7 @@ from selenium.webdriver import Chrome
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 import warnings
+import re
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 ChromeOptions = Options()
@@ -19,6 +20,7 @@ def get_currency_rate_page(currency_rate_url):
 
 
 def parse_eubank(html_page):
+    non_decimal = re.compile(r'[^\d.]+')
     soup = bs(html_page.text, "html.parser")
     exchange_types_tmp = ['В обменных пунктах', 'В Smartbank', 'Для юридических лиц', 'Золотые слитки']
     exchange_types = [val for val in exchange_types_tmp for _ in (0, 1)]
@@ -29,12 +31,13 @@ def parse_eubank(html_page):
             titles = tables.find_all('span', class_='exchange-table__title')  # валюта
             values = tables.find_all('span', class_='exchange-table__value')  # курс
             tmp_result.append([{'transaction_source': et, 'transaction_type': operation_type.text,
-                                'currency': currency.text, 'rate': rate.text} for currency, rate in
+                                'currency': currency.text, 'rate': non_decimal.sub('', rate.text)} for currency, rate in
                                zip(titles, values)])
     final_df = pd.DataFrame(sum(tmp_result, []))
     final_df['ts'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     final_df['bank_name'] = 'Евразийский Банк'
     # print(final_df.head())
+    # print(final_df.dtypes)
     return final_df
 
 
