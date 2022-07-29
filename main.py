@@ -3,7 +3,7 @@ from sqlite_operator import *
 from urllib.parse import urlparse
 
 DATABASE = './exchange_rate.sql'
-CHROMEDRIVER = "/Users/aleksey.bulygin/Downloads/chromedriver"
+CHROMEDRIVER = "./chromedriver"
 URL_LIST = ['https://sber.kz/', 'https://eubank.kz/exchange-rates/']
 
 if __name__ == '__main__':

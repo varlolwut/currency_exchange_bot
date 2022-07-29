@@ -151,3 +151,4 @@ fabric.properties
 
 exchange_rate.sql
 __pycache__
+chromedriver
