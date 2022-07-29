@@ -4,8 +4,12 @@ import requests
 from datetime import datetime
 from selenium.webdriver import Chrome
 from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.options import Options
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
+
+ChromeOptions = Options()
+ChromeOptions.headless = True
 
 
 def get_currency_rate_page(currency_rate_url):
