@@ -9,6 +9,13 @@ import warnings
 import re
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
+#linux deps
+# from pyvirtualdisplay import Display
+# display = Display(visible=0, size=(800, 800))
+# display.start()
+# driver = webdriver.Chrome()
+
+
 ChromeOptions = Options()
 ChromeOptions.headless = True
 
@@ -44,6 +51,8 @@ def parse_eubank(html_page):
 def parse_sber(sel_driver, url):
     count = 0
     driver = Chrome(executable_path=sel_driver)
+    # driver = webdriver.Chrome(sel_driver)
+    # linux dep
     driver.get(url)
     news_element = driver.find_element(By.CLASS_NAME, "rates__table").text
     words_to_list = news_element.split()
