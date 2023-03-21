@@ -53,27 +53,28 @@ async def parse_sber(sel_driver, url):
             return final_df
 
 async def parse_allbanks(html_page):
-    soup = bs(html_page, "html.parser")
-    table = soup.find('table', class_='top15')
-    df = pd.DataFrame(
-        columns=['bank_name', 'USD_Покупка', 'USD_Продажа', 'EUR_Покупка', 'EUR_Продажа', 'RUB_Покупка', 'RUB_Продажа'])
-    for row in table.tbody.find_all('tr'):
-        columns = row.find_all('td')
-        if (columns != []):
-            bank_name = columns[0].text
-            usd_buy = columns[1].text
-            usd_sell = columns[2].text
-            eur_buy = columns[3].text
-            eur_sell = columns[4].text
-            rub_buy = columns[5].text
-            rub_sell = columns[6].text
-            df = df.append(
-                {'bank_name': bank_name, 'USD_Покупка': usd_buy, 'USD_Продажа': usd_sell, 'EUR_Покупка': eur_buy,
-                 'EUR_Продажа': eur_sell, 'RUB_Покупка': rub_buy, 'RUB_Продажа': rub_sell}, ignore_index=True)
-    df = df.melt(id_vars=["bank_name"],
-                 var_name="currency",
-                 value_name="rate")
-    df[['currency', 'operation_type']] = df['currency'].str.split('_', expand=True)
-    df['transaction_source'] = 'unspecified'
-    df['ts'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    return df
+    async with aiohttp.ClientSession() as session:
+        soup = bs(html_page, "html.parser")
+        table = soup.find('table', class_='top15')
+        df = pd.DataFrame(
+            columns=['bank_name', 'USD_Покупка', 'USD_Продажа', 'EUR_Покупка', 'EUR_Продажа', 'RUB_Покупка', 'RUB_Продажа'])
+        for row in table.tbody.find_all('tr'):
+            columns = row.find_all('td')
+            if (columns != []):
+                bank_name = columns[0].text
+                usd_buy = columns[1].text
+                usd_sell = columns[2].text
+                eur_buy = columns[3].text
+                eur_sell = columns[4].text
+                rub_buy = columns[5].text
+                rub_sell = columns[6].text
+                df = df.append(
+                    {'bank_name': bank_name, 'USD_Покупка': usd_buy, 'USD_Продажа': usd_sell, 'EUR_Покупка': eur_buy,
+                     'EUR_Продажа': eur_sell, 'RUB_Покупка': rub_buy, 'RUB_Продажа': rub_sell}, ignore_index=True)
+        df = df.melt(id_vars=["bank_name"],
+                     var_name="currency",
+                     value_name="rate")
+        df[['currency', 'operation_type']] = df['currency'].str.split('_', expand=True)
+        df['transaction_source'] = 'unspecified'
+        df['ts'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        return df
