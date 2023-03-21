@@ -31,7 +31,8 @@ async def parse_eubank_async(session, url):
     html_page = await get_currency_rate_page(session, url)
     return parse_eubank(html_page)
 
-async def parse_sber(sel_driver, url):
+
+async def parse_sber_async(sel_driver, url):
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as response:
             html_page = await response.text()
@@ -52,8 +53,9 @@ async def parse_sber(sel_driver, url):
             final_df['bank_name'] = 'Сбербанк Казахстан'
             return final_df
 
-async def parse_allbanks(html_page):
-    async with aiohttp.ClientSession() as session:
+async def parse_allbanks_async(session, url):
+    async with session.get(url) as response:
+        html_page = await response.text()
         soup = bs(html_page, "html.parser")
         table = soup.find('table', class_='top15')
         df = pd.DataFrame(
